@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>金金导航 · 金金.pw</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+    <style>
+        /* ========== 全局重置 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #070b14;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            user-select: none;
+        }
+
+        /* ========== 粒子背景 ========== */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ========== 动态光晕 ========== */
+        .glow {
+            position: fixed;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.12) 0%, rgba(123, 47, 252, 0.06) 40%, transparent 70%);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            transition: all 0.08s ease-out;
+            will-change: transform;
+        }
+
+        /* ========== 主容器 ========== */
+        .container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        /* ========== 毛玻璃卡片 ========== */
+        .glass-card {
+            width: 100%;
+            max-width: 820px;
+            padding: 40px 44px 36px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(28px) saturate(1.8);
+            -webkit-backdrop-filter: blur(28px) saturate(1.8);
+            border-radius: 48px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 20% 30%, rgba(0, 212, 255, 0.05) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 70%, rgba(123, 47, 252, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* ========== 顶部栏 ========== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-icon {
+            font-size: 26px;
+            background: linear-gradient(135deg, #00d4ff, #7b2ffc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 25px rgba(0, 212, 255, 0.3));
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%,
+            100% {
+                filter: drop-shadow(0 0 25px rgba(0, 212, 255, 0.3));
+            }
+            50% {
+                filter: drop-shadow(0 0 50px rgba(0, 212, 255, 0.6));
+            }
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #f0f4ff, #b0b8e0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .header-right .time {
+            font-size: 19px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 0.5px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .header-right .date {
+            font-size: 12px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .greeting {
+            font-size: 14px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 0.3px;
+        }
+
+        .greeting span {
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 500;
+        }
+
+        /* ==========================================================
+                   公告栏 ✦ 超炫酷升级版
+                   ========================================================== */
+        .announcement-wrapper {
+            width: 100%;
+            margin-bottom: 30px;
+            border-radius: 20px;
+            padding: 18px 22px 16px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            /* 毛玻璃底层 */
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+
+        /* 动态流光背景层 */
+        .announcement-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg at 50% 50%,
+                    rgba(0, 212, 255, 0.08),
+                    rgba(123, 47, 252, 0.12),
+                    rgba(255, 77, 109, 0.08),
+                    rgba(0, 212, 255, 0.08),
+                    rgba(123, 47, 252, 0.12),
+                    rgba(255, 77, 109, 0.08),
+                    rgba(0, 212, 255, 0.08));
+            animation: flowGradient 12s linear infinite;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        @keyframes flowGradient {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+            50% {
+                transform: rotate(180deg) scale(1.1);
+            }
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+
+        /* 第二层光晕 - 呼吸光效 */
+        .announcement-wrapper::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 22px;
+            padding: 2px;
+            background: conic-gradient(from 0deg,
+                    transparent,
+                    rgba(0, 212, 255, 0.5),
+                    rgba(123, 47, 252, 0.5),
+                    rgba(255, 77, 109, 0.3),
+                    transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: borderBreath 3s ease-in-out infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes borderBreath {
+            0%,
+            100% {
+                opacity: 0.4;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.02);
+            }
+        }
+
+        /* 鼠标跟随光晕 (在公告栏内部) */
+        .announcement-wrapper .aura {
+            position: absolute;
+            inset: -20px;
+            border-radius: 30px;
+            background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%),
+                    rgba(0, 212, 255, 0.10) 0%,
+                    rgba(123, 47, 252, 0.05) 40%,
+                    transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .announcement-wrapper:hover .aura {
+            opacity: 1;
+        }
+
+        /* 公告内容 - 保持清晰 */
+        .announcement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .announcement-header .title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+        }
+
+        .announcement-header .title i {
+            color: #ff6b6b;
+            font-size: 15px;
+            animation: pulseIcon 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseIcon {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.7;
+            }
+        }
+
+        .announcement-body {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 2px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .announcement-body .highlight {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffd93d;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 0 0 30px rgba(255, 217, 61, 0.15);
+        }
+
+        .announcement-body .highlight i {
+            color: #ff6b6b;
+            font-size: 14px;
+            animation: pulseIcon 2.5s ease-in-out infinite;
+        }
+
+        .announcement-body .rules {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 16px;
+            padding: 4px 0;
+        }
+
+        .announcement-body .rules .rule-item {
+            font-size: 14px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2px 14px 2px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .announcement-body .rules .rule-item:hover {
+            background: rgba(255, 255, 255, 0.10);
+            border-color: rgba(0, 212, 255, 0.15);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.05);
+        }
+
+        .announcement-body .rules .rule-item .label {
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 300;
+        }
+
+        .announcement-body .rules .rule-item .apply {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 400;
+            padding: 0 2px;
+        }
+
+        .announcement-body .rules .rule-item .value {
+            color: #4fc3f7;
+            font-weight: 600;
+            text-shadow: 0 0 20px rgba(79, 195, 247, 0.2);
+        }
+
+        .announcement-body .contact {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-top: 4px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            margin-top: 2px;
+        }
+
+        .announcement-body .contact i {
+            color: #ff6b6b;
+            font-size: 13px;
+        }
+
+        .announcement-body .contact .id {
+            color: #fff;
+            font-weight: 600;
+            background: rgba(0, 212, 255, 0.08);
+            padding: 0 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.08);
+            font-family: 'Inter', monospace;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+        }
+
+        /* ==========================================================
+                   唯一平台入口
+                   ========================================================== */
+        .single-platform {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 4px 0 4px;
+        }
+
+        .mega-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 40px;
+            padding: 32px 56px;
+            width: 100%;
+            max-width: 380px;
+            transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            gap: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        .mega-link::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 42px;
+            padding: 2px;
+            background: conic-gradient(from 90deg, #00d4ff, #7b2ffc, #ff4d6d, #00d4ff);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .mega-link:hover::before {
+            opacity: 1;
+        }
+
+        .mega-link:hover {
+            transform: translateY(-8px) scale(1.02);
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 30px 80px rgba(0, 212, 255, 0.12), 0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .mega-link:active {
+            transform: scale(0.96);
+        }
+
+        .mega-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s ease;
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+        }
+
+        .mega-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+            filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.15));
+            transition: all 0.4s ease;
+        }
+
+        .mega-link:hover .mega-icon img {
+            transform: scale(1.08) rotate(-4deg);
+            filter: drop-shadow(0 0 50px rgba(0, 212, 255, 0.3));
+        }
+
+        .mega-label {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #fff, #80b4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .mega-shortcut {
+            font-size: 12px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 4px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .mega-link:hover .mega-shortcut {
+            color: rgba(255, 255, 255, 0.5);
+            border-color: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* ========== 底部 ========== */
+        .footer {
+            margin-top: 26px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.15);
+            letter-spacing: 0.5px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            padding-top: 16px;
+        }
+
+        .footer .shortcuts {
+            display: flex;
+            gap: 16px;
+        }
+
+        .footer .shortcuts kbd {
+            background: rgba(255, 255, 255, 0.04);
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .glass-card {
+                padding: 26px 20px 22px;
+                border-radius: 32px;
+                max-width: 98%;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+                margin-bottom: 16px;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+
+            .logo-text {
+                font-size: 16px;
+            }
+
+            .announcement-wrapper {
+                padding: 14px 16px 12px;
+                border-radius: 16px;
+                margin-bottom: 22px;
+            }
+
+            .announcement-body .highlight {
+                font-size: 14px;
+            }
+
+            .announcement-body .rules .rule-item {
+                font-size: 13px;
+                padding: 1px 10px 1px 8px;
+            }
+
+            .announcement-body .contact {
+                font-size: 13px;
+            }
+
+            .mega-link {
+                padding: 26px 30px;
+                max-width: 100%;
+                border-radius: 30px;
+            }
+
+            .mega-icon {
+                width: 64px;
+                height: 64px;
+            }
+
+            .mega-label {
+                font-size: 16px;
+            }
+
+            .footer {
+                flex-direction: column;
+                gap: 8px;
+                align-items: center;
+                padding-top: 14px;
+                margin-top: 20px;
+            }
+
+            .footer .shortcuts {
+                gap: 10px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .header-right .time {
+                font-size: 17px;
+            }
+
+            .greeting {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 18px 12px 16px;
+                border-radius: 24px;
+            }
+
+            .announcement-wrapper {
+                padding: 10px 12px 10px;
+                border-radius: 14px;
+                margin-bottom: 18px;
+            }
+
+            .announcement-body .highlight {
+                font-size: 13px;
+            }
+
+            .announcement-body .rules {
+                gap: 4px 10px;
+            }
+
+            .announcement-body .rules .rule-item {
+                font-size: 12px;
+                padding: 1px 8px 1px 6px;
+            }
+
+            .announcement-body .contact {
+                font-size: 12px;
+                flex-wrap: wrap;
+            }
+
+            .mega-link {
+                padding: 20px 18px;
+                border-radius: 24px;
+                gap: 10px;
+            }
+
+            .mega-icon {
+                width: 50px;
+                height: 50px;
+            }
+
+            .mega-label {
+                font-size: 14px;
+            }
+
+            .header-right .time {
+                font-size: 15px;
+            }
+
+            .logo-text {
+                font-size: 14px;
+            }
+
+            .logo-icon {
+                font-size: 22px;
+            }
+        }
+
+        /* ========== 入场动画 ========== */
+        .glass-card {
+            opacity: 0;
+            transform: translateY(30px) scale(0.97);
+            animation: cardEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+        }
+
+        @keyframes cardEnter {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .header,
+        .announcement-wrapper,
+        .single-platform,
+        .footer {
+            opacity: 0;
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .header {
+            animation-delay: 0.2s;
+        }
+        .announcement-wrapper {
+            animation-delay: 0.3s;
+        }
+        .single-platform {
+            animation-delay: 0.45s;
+        }
+        .footer {
+            animation-delay: 0.55s;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mega-link {
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%,
+            100% {
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                box-shadow: 0 20px 60px rgba(0, 212, 255, 0.08), 0 10px 40px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ====== 粒子画布 ====== -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- ====== 动态光晕 ====== -->
+    <div class="glow" id="glow"></div>
+
+    <!-- ====== 主容器 ====== -->
+    <div class="container">
+
+        <!-- ====== 毛玻璃卡片 ====== -->
+        <div class="glass-card" id="glassCard">
+
+            <!-- ====== 顶部栏 ====== -->
+            <div class="header">
+                <div class="header-left">
+                    <span class="logo-icon"><i class="fas fa-compass"></i></span>
+                    <span class="logo-text">金金导航 · 金金.pw</span>
+                </div>
+                <div class="header-right">
+                    <span class="greeting"><span id="greetingText">你好</span></span>
+                    <span class="date" id="dateDisplay"></span>
+                    <span class="time" id="timeDisplay">--:--:--</span>
+                </div>
+            </div>
+
+            <!-- ====== 公告栏 · 超炫酷版 ====== -->
+            <div class="announcement-wrapper" id="announcementWrapper">
+                <!-- 鼠标跟随光晕 -->
+                <div class="aura" id="auraGlow"></div>
+
+                <div class="announcement-header">
+                    <span class="title"><i class="fas fa-bullhorn"></i> 公告</span>
+                </div>
+                <div class="announcement-body">
+                    <div class="highlight">
+                        <i class="fas fa-gift"></i>
+                        亏损福利 · 每日 23:00 处理
+                    </div>
+                    <div class="rules">
+                        <span class="rule-item"><span class="label">亏损</span> 500 <span class="apply">申请</span> <span class="value">28</span></span>
+                        <span class="rule-item"><span class="label">亏损</span> 1000 <span class="apply">申请</span> <span class="value">58</span></span>
+                        <span class="rule-item"><span class="label">亏损</span> 2000 <span class="apply">申请</span> <span class="value">88</span></span>
+                        <span class="rule-item"><span class="label">亏损</span> 5000 <span class="apply">申请</span> <span class="value">188</span></span>
+                    </div>
+                    <div class="contact">
+                        <i class="fas fa-phone-alt"></i>
+                        联系旺旺号：<span class="id">276177193</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ====== 唯一平台入口 ====== -->
+            <div class="single-platform">
+                <a href="https://pwrue.tprsmi.com/app/register.php?site_id=1019&topId=2253602" target="_blank" class="mega-link" id="megaBaidu">
+                    <div class="mega-icon">
+                        <img src="https://n-g.vip/ty.webp" alt="NG体育" />
+                    </div>
+                    <span class="mega-label">NG体育</span>
+                    <span class="mega-shortcut">点击注册</span>
+                </a>
+            </div>
+
+            <!-- ====== 底部 ====== -->
+            <div class="footer">
+                <span>NG集团 · 品质铸就品牌！</span>
+                <div class="shortcuts">
+                    <span><kbd>认准 金金.pw</kbd></span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ================================================================
+        //  1. 粒子背景系统
+        // ================================================================
+        (function initParticles() {
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            let w, h;
+            let particles = [];
+            const COUNT = 150;
+            const MAX_DIST = 130;
+            const MOUSE_RADIUS = 200;
+
+            let mouseX = -9999,
+                mouseY = -9999;
+
+            function resize() {
+                w = canvas.width = window.innerWidth;
+                h = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+                reset() {
+                    this.x = Math.random() * w;
+                    this.y = Math.random() * h;
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = (Math.random() - 0.5) * 0.3;
+                    this.radius = Math.random() * 2.0 + 0.5;
+                    this.alpha = Math.random() * 0.5 + 0.15;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    const dx = this.x - mouseX;
+                    const dy = this.y - mouseY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < MOUSE_RADIUS && dist > 0) {
+                        const force = (1 - dist / MOUSE_RADIUS) * 0.25;
+                        this.x += (dx / dist) * force;
+                        this.y += (dy / dist) * force;
+                    }
+
+                    if (this.x < 0) { this.x = 0;
+                        this.vx *= -0.8; }
+                    if (this.x > w) { this.x = w;
+                        this.vx *= -0.8; }
+                    if (this.y < 0) { this.y = 0;
+                        this.vy *= -0.8; }
+                    if (this.y > h) { this.y = h;
+                        this.vy *= -0.8; }
+
+                    this.vx += (Math.random() - 0.5) * 0.006;
+                    this.vy += (Math.random() - 0.5) * 0.006;
+                    const sp = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                    if (sp > 0.6) {
+                        this.vx = (this.vx / sp) * 0.6;
+                        this.vy = (this.vy / sp) * 0.6;
+                    }
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(180, 200, 255, ${this.alpha})`;
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < COUNT; i++) {
+                particles.push(new Particle());
+            }
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                const glow = document.getElementById('glow');
+                glow.style.left = e.clientX + 'px';
+                glow.style.top = e.clientY + 'px';
+
+                // 公告栏内部光晕跟随
+                const wrapper = document.getElementById('announcementWrapper');
+                const rect = wrapper.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width * 100);
+                const y = ((e.clientY - rect.top) / rect.height * 100);
+                wrapper.style.setProperty('--mx', x + '%');
+                wrapper.style.setProperty('--my', y + '%');
+            });
+
+            document.addEventListener('mouseleave', () => {
+                mouseX = -9999;
+                mouseY = -9999;
+            });
+
+            function drawLines() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < MAX_DIST) {
+                            const alpha = (1 - dist / MAX_DIST) * 0.12;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(160, 190, 255, ${alpha})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, w, h);
+                for (const p of particles) {
+                    p.update();
+                    p.draw();
+                }
+                drawLines();
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                resize();
+                for (const p of particles) {
+                    p.x = Math.random() * w;
+                    p.y = Math.random() * h;
+                }
+            });
+        })();
+
+        // ================================================================
+        //  2. 时间 & 问候
+        // ================================================================
+        (function updateTime() {
+            const timeEl = document.getElementById('timeDisplay');
+            const dateEl = document.getElementById('dateDisplay');
+            const greetEl = document.getElementById('greetingText');
+
+            function pad(n) { return String(n).padStart(2, '0'); }
+
+            function update() {
+                const now = new Date();
+                const h = now.getHours();
+                const m = now.getMinutes();
+                const s = now.getSeconds();
+                timeEl.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+
+                const y = now.getFullYear();
+                const mo = pad(now.getMonth() + 1);
+                const d = pad(now.getDate());
+                const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+                const wd = weekdays[now.getDay()];
+                dateEl.textContent = `${y}年${mo}月${d}日 · 周${wd}`;
+
+                let greet = '';
+                if (h < 6) greet = '夜深了';
+                else if (h < 9) greet = '早上好';
+                else if (h < 12) greet = '上午好';
+                else if (h < 14) greet = '中午好';
+                else if (h < 18) greet = '下午好';
+                else if (h < 21) greet = '傍晚好';
+                else greet = '晚上好';
+                greetEl.textContent = greet;
+            }
+
+            update();
+            setInterval(update, 1000);
+        })();
+
+        // ================================================================
+        //  3. 键盘快捷键
+        // ================================================================
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && (e.key === 'b' || e.key === 'B')) {
+                e.preventDefault();
+                window.open('https://www.baidu.com', '_blank');
+            }
+            if (e.key === 'Escape') {
+                document.activeElement?.blur();
+            }
+        });
+
+        // ================================================================
+        //  4. 卡片视差
+        // ================================================================
+        (function initParallax() {
+            const card = document.getElementById('glassCard');
+            let isHovering = false;
+            let currentX = 0,
+                currentY = 0;
+            let targetX = 0,
+                targetY = 0;
+
+            card.addEventListener('mouseenter', () => { isHovering = true; });
+            card.addEventListener('mouseleave', () => {
+                isHovering = false;
+                targetX = 0;
+                targetY = 0;
+            });
+
+            card.addEventListener('mousemove', (e) => {
+                if (!isHovering) return;
+                const rect = card.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width - 0.5;
+                const y = (e.clientY - rect.top) / rect.height - 0.5;
+                targetX = x * 4;
+                targetY = -y * 4;
+            });
+
+            function animateParallax() {
+                currentX += (targetX - currentX) * 0.08;
+                currentY += (targetY - currentY) * 0.08;
+
+                if (isHovering || Math.abs(currentX) > 0.01 || Math.abs(currentY) > 0.01) {
+                    card.style.transform =
+                        `perspective(1200px) rotateX(${currentY}deg) rotateY(${currentX}deg) scale(1)`;
+                } else {
+                    card.style.transform = 'perspective(1200px) rotateX(0deg) rotateY(0deg) scale(1)';
+                }
+                requestAnimationFrame(animateParallax);
+            }
+            animateParallax();
+        })();
+
+        // ================================================================
+        //  5. 控制台彩蛋
+        // ================================================================
+        console.log('%c✦ 金金导航 · 金金.pw ✦', 'font-size:28px; font-weight:800; color:#00d4ff;');
+        console.log('%c🚀 唯一入口 · NG体育', 'font-size:14px; color:#b0b8e0;');
+        console.log('%c⌘B 打开百度 · ESC 失焦', 'font-size:12px; color:#666;');
+        console.log('✨ 极简 · 聚焦 · 星际漫游');
+        console.log('🔥 公告栏已升级：动态流光 + 呼吸边框 + 光晕跟随');
+    </script>
+
+</body>
+</html>
